@@ -1,3 +1,4 @@
+import 'package:app_idx/entities/user.dart';
 import 'package:app_idx/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -20,22 +21,11 @@ class LoginScreen extends StatelessWidget {
     'Password is required'
   ];
 
-  List<Map<String, String>> usersAndPasswords = 
+  List<User> usersAndPasswords = 
   [
-    {
-      'username': 'Aid', 
-      'password': '123'
-    },
-
-    {
-      'username': 'Ale', 
-      'password': 'soyAle'
-    },
-
-    {
-      'username': 'Marcos', 
-      'password': 'miContraseña123'
-    }
+    User('Aid', '123'),
+    User('Ale', 'soyAle'),
+    User('Marcos', 'miContraseña')
   ];
 
   @override
@@ -87,10 +77,14 @@ class LoginScreen extends StatelessWidget {
 
                 if (inputPass.isNotEmpty && inputUser.isNotEmpty) 
                 {
-                  bool userFound = false;
-                  bool passFound = false;
+                  //bool userFound = false;
+                  //bool passFound = false;
+                  if (usersAndPasswords.find(i)))
+                  {
+                    User.usersAndPasswords[].validateUser(inputUser, inputPass);
+                  }
 
-                  for (var user in usersAndPasswords) 
+                  /*for (var user in usersAndPasswords) 
                   {
                     if (user['username'] == inputUser) 
                     {
@@ -114,8 +108,8 @@ class LoginScreen extends StatelessWidget {
                   else if (!passFound)
                   {
                     showSnackBar(errorMessages[1], context);
-                  }
-                } 
+                  }*/
+                }
                 else if (inputUser.isEmpty) 
                 {
                   showSnackBar(errorMessages[3], context);
