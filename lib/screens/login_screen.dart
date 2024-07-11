@@ -11,18 +11,16 @@ class LoginScreen extends StatelessWidget {
   TextEditingController userController = TextEditingController();
   TextEditingController passController = TextEditingController();
 
-  List<String> errorMessages = 
-  [ 
-    'Incorrect username', 
+  List<String> errorMessages = [
+    'Incorrect username',
     'Incorrect password',
-    'Incorrect username and password'
+    'Incorrect username and password',
     'Username and password are required',
     'Username is required',
     'Password is required'
   ];
 
-  List<User> usersAndPasswords = 
-  [
+  List<User> usersAndPasswords = [
     User('Aid', '123'),
     User('Ale', 'soyAle'),
     User('Marcos', 'miContraseña')
@@ -48,7 +46,7 @@ class LoginScreen extends StatelessWidget {
                 hintText: 'Username',
                 prefixIcon: Icon(Icons.person),
                 border: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(30)))),
+                    borderRadius: BorderRadius.all(Radius.circular(30)))),
           ),
           const SizedBox(
             height: 20,
@@ -70,79 +68,62 @@ class LoginScreen extends StatelessWidget {
                   fixedSize: const Size(300, 50),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30))),
-              onPressed: () 
-              {
+              onPressed: () {
                 String inputUser = userController.text;
                 String inputPass = passController.text;
 
-                if (inputPass.isNotEmpty && inputUser.isNotEmpty) 
-                {
-                  //bool userFound = false;
-                  //bool passFound = false;
-                  if (usersAndPasswords.find(i)))
-                  {
-                    User.usersAndPasswords[].validateUser(inputUser, inputPass);
-                  }
+                if (inputUser.isEmpty && inputPass.isEmpty) {
+                  showSnackBar(errorMessages[3],
+                      context); // Username and password are required
+                } else if (inputUser.isEmpty) {
+                  showSnackBar(
+                      errorMessages[4], context); // Username is required
+                } else if (inputPass.isEmpty) {
+                  showSnackBar(
+                      errorMessages[5], context); // Password is required
+                } else {
+                  bool credentialsValid = false;
 
-                  /*for (var user in usersAndPasswords) 
-                  {
-                    if (user['username'] == inputUser) 
-                    {
-                      userFound = true;
-                      if (userFound && user['password'] == inputPass)
-                      {
-                        passFound = true;
-                        context.pushNamed(HomeScreen.name, extra: userController.text);
-                        break;
-                      }
+                  for (var user in usersAndPasswords) {
+                    if (user.validateUser(inputUser, inputPass)) {
+                      credentialsValid = true;
+                      break;
                     }
                   }
-                  if (!userFound && !passFound) 
-                  {
+
+                  if (credentialsValid) {
+                    context.pushNamed(HomeScreen.name);
+                  } else {
                     showSnackBar(errorMessages[2], context);
                   }
-                  else if (!userFound)
-                  {
-                    showSnackBar(errorMessages[0], context);
-                  }
-                  else if (!passFound)
-                  {
-                    showSnackBar(errorMessages[1], context);
-                  }*/
                 }
-                else if (inputUser.isEmpty) 
-                {
-                  showSnackBar(errorMessages[3], context);
-                } 
-                else if (inputUser.isEmpty) 
-                {
-                  showSnackBar(errorMessages[4], context);
-                }
-                else if (inputPass.isEmpty) 
-                {
-                  showSnackBar(errorMessages[5], context);
-                }
-
               },
-              child: const Text
-              (
+              child: const Text(
                 'Login',
-              )
-            )
-          ],
-        ),
-      )
-    );
+              )),
+          const SizedBox(
+            height: 20,
+          ),
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  fixedSize: const Size(300, 50),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30))),
+              onPressed: () {
+                context.pushNamed(HomeScreen.name);
+              },
+              child: const Text(
+                'VIP',
+              ))
+        ],
+      ),
+    ));
   }
 }
 
-void showSnackBar(String message, BuildContext context)
-{
+void showSnackBar(String message, BuildContext context) {
   String errorMessage = message;
-  SnackBar snackErrors = SnackBar
-  (
-    content: Text(errorMessage)
-  );
+  SnackBar snackErrors = SnackBar(content: Text(errorMessage));
 
   ScaffoldMessenger.of(context).showSnackBar(snackErrors);
 }
