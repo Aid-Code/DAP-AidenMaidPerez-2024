@@ -103,18 +103,7 @@ class LoginScreen extends StatelessWidget {
               )),
           const SizedBox(
             height: 20,
-          ),
-          ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  fixedSize: const Size(300, 50),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30))),
-              onPressed: () {
-                context.pushNamed(HomeScreen.name);
-              },
-              child: const Text(
-                'VIP',
-              ))
+          )
         ],
       ),
     ));

@@ -3,5 +3,5 @@ class Kit {
   final String precio;
   final String imagen;
 
-  Kit(this.nombre, this.precio, this.imagen);
+  Kit({required this.nombre, required this.precio, required this.imagen});
 }

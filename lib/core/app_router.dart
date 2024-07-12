@@ -1,4 +1,5 @@
-import 'package:app_idx/screens/arduinouno_screen.dart';
+import 'package:app_idx/entities/kit.dart';
+import 'package:app_idx/screens/details_screen.dart';
 import 'package:app_idx/screens/home_screen.dart';
 import 'package:app_idx/screens/login_screen.dart';
 import 'package:go_router/go_router.dart';
@@ -15,8 +16,8 @@ final appRouter = GoRouter(routes: [
     builder: (context, state) => HomeScreen(),
   ),
   GoRoute(
-    name: ArduinoUno.name,
-    path: '/home/arduinoUno',
-    builder: (context, state) => ArduinoUno(),
+    name: DetailsScreen.name,
+    path: '/home/details/:kit',
+    builder: (context, state) => DetailsScreen(kit: state.extra as Kit),
   ),
 ]);
