@@ -1,6 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:app_idx/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart'; // Importar Provider
 
 class RegisterScreen extends StatelessWidget {
   static const name = 'RegisterScreen';
@@ -11,6 +12,9 @@ class RegisterScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Acceder al AuthProvider
+    final authProvider = Provider.of<AuthProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Register'),
@@ -46,33 +50,31 @@ class RegisterScreen extends StatelessWidget {
               obscureText: true,
             ),
             const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () async {
-                final String username = usernameController.text.trim();  // Usamos username en lugar de name
-                final String email = emailController.text.trim();
-                final String password = passwordController.text.trim();
+            authProvider.isLoading
+                ? const CircularProgressIndicator() // Indicador de carga mientras se registra
+                : ElevatedButton(
+                    onPressed: () async {
+                      final String username = usernameController.text.trim();  // Usamos username
+                      final String email = emailController.text.trim();
+                      final String password = passwordController.text.trim();
 
-                if (username.isEmpty || email.isEmpty || password.isEmpty) {
-                  showSnackBar('All fields are required', context);
-                  return;
-                }
+                      if (username.isEmpty || email.isEmpty || password.isEmpty) {
+                        showSnackBar('All fields are required', context);
+                        return;
+                      }
 
-                try {
-                  // Agregar usuario a Firestore con el username
-                  await FirebaseFirestore.instance.collection('users').add({
-                    'username': username,  // Almacenamos el username en Firestore
-                    'email': email,
-                    'password': password,  // Recuerda que deberías cifrar la contraseña en un caso real
-                  });
+                      // Llamar al método de registro en el AuthProvider
+                      bool success = await authProvider.register(username, email, password);
 
-                  showSnackBar('Registration successful', context);
-                  context.pop(); // Navegar de vuelta a la pantalla de login
-                } catch (e) {
-                  showSnackBar(e.toString(), context);
-                }
-              },
-              child: const Text('Register'),
-            ),
+                      if (success) {
+                        showSnackBar('Registration successful', context);
+                        context.pop(); // Volver a la pantalla de login
+                      } else {
+                        showSnackBar(authProvider.errorMessage, context); // Mostrar error de registro
+                      }
+                    },
+                    child: const Text('Register'),
+                  ),
           ],
         ),
       ),

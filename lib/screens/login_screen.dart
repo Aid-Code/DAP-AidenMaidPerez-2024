@@ -1,6 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:app_idx/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart'; // Importar Provider
 import 'home_screen.dart';
 import 'register_screen.dart';
 
@@ -16,10 +17,12 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passController = TextEditingController();
-  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
+    // Acceder al AuthProvider
+    final authProvider = Provider.of<AuthProvider>(context);
+
     return Scaffold(
       body: Center(
         child: Padding(
@@ -42,12 +45,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter an email address';
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: 20),
               TextFormField(
@@ -60,16 +57,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a password';
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: 50),
-              isLoading
-                  ? const CircularProgressIndicator() // Show loading indicator while processing
+              authProvider.isLoading
+                  ? const CircularProgressIndicator() // Mostrar el indicador de carga
                   : ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         fixedSize: const Size(300, 50),
@@ -86,30 +77,15 @@ class _LoginScreenState extends State<LoginScreen> {
                           return;
                         }
 
-                        setState(() {
-                          isLoading = true; // Start loading
-                        });
+                        // Llamar al método de login en el AuthProvider
+                        bool success = await authProvider.login(email, password);
 
-                        try {
-                          // Buscar usuario en Firestore
-                          QuerySnapshot userQuery = await FirebaseFirestore.instance
-                              .collection('users')
-                              .where('email', isEqualTo: email)
-                              .where('password', isEqualTo: password)
-                              .get();
-
-                          if (userQuery.docs.isNotEmpty) {
-                            // Usuario encontrado, navegar a la pantalla de inicio
-                            context.pushNamed(HomeScreen.name);
-                          } else {
-                            showSnackBar('User not found or incorrect password', context);
-                          }
-                        } catch (e) {
-                          showSnackBar('An unexpected error occurred: $e', context);
-                        } finally {
-                          setState(() {
-                            isLoading = false; // Stop loading
-                          });
+                        if (success) {
+                          // Si el login es exitoso, navegar a la pantalla de inicio
+                          context.pushNamed(HomeScreen.name);
+                        } else {
+                          // Si el login falla, mostrar el error
+                          showSnackBar(authProvider.errorMessage, context);
                         }
                       },
                       child: const Text('Login'),
@@ -127,9 +103,9 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-}
 
-void showSnackBar(String message, BuildContext context) {
-  SnackBar snackErrors = SnackBar(content: Text(message));
-  ScaffoldMessenger.of(context).showSnackBar(snackErrors);
+  void showSnackBar(String message, BuildContext context) {
+    SnackBar snackErrors = SnackBar(content: Text(message));
+    ScaffoldMessenger.of(context).showSnackBar(snackErrors);
+  }
 }
