@@ -1,3 +1,3 @@
-# app_idx
+# firebase_test
 
 A new Flutter project.

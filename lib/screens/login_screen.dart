@@ -1,9 +1,7 @@
-import 'package:app_idx/providers/auth_provider.dart';
+import 'package:firebase_test/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart'; // Importar Provider
-import 'home_screen.dart';
-import 'register_screen.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   static const name = 'LoginScreen';
@@ -15,97 +13,138 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+
+  bool isButtonEnabled = false;
+  bool isUsernameValid = true;
+  bool isPasswordValid = true;
+
+  String? generalError; // Para mostrar un error general en la pantalla
+
+  @override
+  void initState() {
+    super.initState();
+    emailController.addListener(_validateForm);
+    passwordController.addListener(_validateForm);
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  void _validateForm() {
+    setState(() {
+      isButtonEnabled = emailController.text.isNotEmpty && passwordController.text.isNotEmpty;
+    });
+  }
+
+  Future<void> _loginUser() async {
+    String enteredEmail = emailController.text;
+    String enteredPassword = passwordController.text;
+
+    try {
+      final userManager = Provider.of<UserProvider>(context, listen: false);
+
+      // Llamada al método login
+      final authenticated = await userManager.login(enteredEmail, enteredPassword);
+
+      if (authenticated) {
+        final currentUser = userManager.currentUser;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('¡Bienvenido ${currentUser?.username}!')),
+        );
+
+        context.push('/home'); // Redirigir a la pantalla principal
+      } else {
+        setState(() {
+          isUsernameValid = false;
+          isPasswordValid = false;
+          generalError = userManager.errorMessage; // Mostrar el error específico
+        });
+
+        print('Error de autenticación: ${userManager.errorMessage}');
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userManager.errorMessage)),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        generalError = 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.';
+      });
+
+      print('Error inesperado durante el login: $e');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ocurrió un error inesperado')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Acceder al AuthProvider
-    final authProvider = Provider.of<AuthProvider>(context);
-
     return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Log in',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 40),
-              TextFormField(
-                controller: emailController,
-                decoration: const InputDecoration(
-                  hintText: 'Email',
-                  prefixIcon: Icon(Icons.email),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(30)),
-                  ),
-                ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: passController,
-                decoration: const InputDecoration(
-                  hintText: 'Password',
-                  prefixIcon: Icon(Icons.lock),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(30)),
-                  ),
-                ),
-                obscureText: true,
-              ),
-              const SizedBox(height: 50),
-              authProvider.isLoading
-                  ? const CircularProgressIndicator() // Mostrar el indicador de carga
-                  : ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        fixedSize: const Size(300, 50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      onPressed: () async {
-                        String email = emailController.text.trim();
-                        String password = passController.text.trim();
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'Iniciar sesión',
+              style: TextStyle(fontFamily: 'InknutAntiqua', fontSize: 24),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
 
-                        if (email.isEmpty || password.isEmpty) {
-                          showSnackBar('Email and password are required', context);
-                          return;
-                        }
-
-                        // Llamar al método de login en el AuthProvider
-                        bool success = await authProvider.login(email, password);
-
-                        if (success) {
-                          // Si el login es exitoso, navegar a la pantalla de inicio
-                          context.pushNamed(HomeScreen.name);
-                        } else {
-                          // Si el login falla, mostrar el error
-                          showSnackBar(authProvider.errorMessage, context);
-                        }
-                      },
-                      child: const Text('Login'),
-                    ),
-              const SizedBox(height: 20),
-              TextButton(
-                onPressed: () {
-                  context.pushNamed(RegisterScreen.name);
-                },
-                child: const Text('Don\'t have an account? Register here'),
+            // Mostrar un error general si ocurre
+            if (generalError != null)
+              Text(
+                generalError!,
+                style: const TextStyle(color: Colors.red, fontSize: 16),
+                textAlign: TextAlign.center,
               ),
-            ],
-          ),
+
+            const SizedBox(height: 16),
+
+            TextField(
+              controller: emailController,
+              decoration: InputDecoration(
+                labelText: 'Email',
+                errorText: isUsernameValid ? null : 'Email no encontrado',
+                border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(30))),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Contraseña',
+                errorText: isPasswordValid ? null : 'Contraseña incorrecta',
+                border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(30))),
+              ),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: isButtonEnabled ? _loginUser : null,
+              child: const Text('Ingresar'),
+            ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () {
+                context.push('/register'); // Redirigir a registro
+              },
+              child: const Text('¿No tienes una cuenta? Regístrate aquí'),
+            ),
+          ],
         ),
       ),
     );
-  }
-
-  void showSnackBar(String message, BuildContext context) {
-    SnackBar snackErrors = SnackBar(content: Text(message));
-    ScaffoldMessenger.of(context).showSnackBar(snackErrors);
   }
 }

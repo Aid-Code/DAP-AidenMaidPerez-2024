@@ -1,9 +1,17 @@
-import 'package:app_idx/core/app_router.dart';
+import 'package:firebase_test/core/app_router.dart';
+import 'package:firebase_test/providers/kit_provider.dart';
+import 'package:firebase_test/providers/user_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Importa el paquete provider
-import 'providers/auth_provider.dart'; // Importa el AuthProvider (o el provider que estés utilizando)
+import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
+import 'firebase_options.dart';
 
-void main() {
+
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MainApp());
 }
 
@@ -15,7 +23,8 @@ class MainApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         // Puedes añadir aquí más providers si es necesario
-        ChangeNotifierProvider(create: (_) => AuthProvider()), // Proveedor de autenticación
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => KitProvider()) // Proveedor de autenticación
       ],
       child: MaterialApp.router(
         routerConfig: appRouter,
@@ -24,3 +33,5 @@ class MainApp extends StatelessWidget {
     );
   }
 }
+
+

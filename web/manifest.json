@@ -1,6 +1,6 @@
 {
-    "name": "app_idx",
-    "short_name": "app_idx",
+    "name": "firebase_test",
+    "short_name": "firebase_test",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
